@@ -1,0 +1,76 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Configure CMake
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        shell: cmd
+
+      - name: Build tests
+        run: cmake --build build --target PacketTestBundleTests
+        shell: cmd
+
+      - name: Run tests
+        id: run-tests
+        run: build\PacketTestBundleTests.exe 2>&1 | tee test_output.txt
+        shell: cmd
+
+      - name: Write job summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat test_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Build GUI
+        run: cmake --build build --target PacketTestBundle
+        shell: cmd
+
+      - name: Upload GUI artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: PacketTestBundle
+          path: build\PacketTestBundle.exe
+
+  release:
+    needs: test
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Configure CMake
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        shell: cmd
+
+      - name: Build
+        run: cmake --build build
+        shell: cmd
+
+      - name: Build installer
+        run: |
+          choco install innosetup --no-progress -y
+          ISCC /DMyAppVersion=${{ github.ref_name }} installer.iss
+        shell: cmd
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            build\PacketTestBundle.exe
+            installer_out\*.exe
+          generate_release_notes: true

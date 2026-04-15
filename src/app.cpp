@@ -30,6 +30,7 @@ static HWND g_hWnd = nullptr;
 static ImFont* g_uiFont = nullptr;
 static ImFont* g_monoFont = nullptr;
 static ImFont* g_summaryValueFont = nullptr;
+static float g_uiScale = 1.0f;
 
 namespace {
 constexpr unsigned short kDiscoveryPort = 39391;
@@ -148,22 +149,22 @@ void panelHeader(const char* title) {
     float w = ImGui::GetContentRegionAvail().x;
     float h = ImGui::GetTextLineHeightWithSpacing() + 6.0f;
     ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + w, p.y + h), IM_COL32(37, 59, 91, 255));
-    ImGui::SetCursorScreenPos(ImVec2(p.x + 8.0f, p.y + 3.0f));
+    ImGui::SetCursorScreenPos(ImVec2(p.x + 8.0f * g_uiScale, p.y + 3.0f * g_uiScale));
     ImGui::TextUnformatted(title);
-    ImGui::SetCursorScreenPos(ImVec2(p.x, p.y + h + 4.0f));
+    ImGui::SetCursorScreenPos(ImVec2(p.x, p.y + h + 4.0f * g_uiScale));
 }
 
 void summaryKpi(const char* label, const std::string& value, ImU32 accent) {
     ImDrawList* draw = ImGui::GetWindowDrawList();
     const ImVec2 start = ImGui::GetCursorScreenPos();
     const float width = ImGui::GetContentRegionAvail().x;
-    const float height = 24.0f;
+    const float height = 24.0f * g_uiScale;
     draw->AddRectFilled(start, ImVec2(start.x + width, start.y + height), IM_COL32(15, 20, 29, 255));
     draw->AddRect(start, ImVec2(start.x + width, start.y + height), IM_COL32(54, 70, 98, 255));
-    draw->AddRectFilled(start, ImVec2(start.x + 4.0f, start.y + height), accent);
-    ImGui::SetCursorScreenPos(ImVec2(start.x + 10.0f, start.y + 4.0f));
+    draw->AddRectFilled(start, ImVec2(start.x + 4.0f * g_uiScale, start.y + height), accent);
+    ImGui::SetCursorScreenPos(ImVec2(start.x + 10.0f * g_uiScale, start.y + 4.0f * g_uiScale));
     ImGui::TextUnformatted(label);
-    ImGui::SameLine(width - 78.0f);
+    ImGui::SameLine(width - 78.0f * g_uiScale);
     if (g_summaryValueFont) ImGui::PushFont(g_summaryValueFont);
     ImGui::TextUnformatted(value.c_str());
     if (g_summaryValueFont) ImGui::PopFont();
@@ -230,7 +231,11 @@ bool App::createWindow() {
     HICON smallIcon = (HICON)LoadImageW(inst, MAKEINTRESOURCEW(IDI_APP_ICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
     WNDCLASSEXW wc = {sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, inst, largeIcon, nullptr, nullptr, nullptr, appmeta::kWindowClassName, smallIcon};
     RegisterClassExW(&wc);
-    g_hWnd = CreateWindowW(wc.lpszClassName, appmeta::kWindowTitle, WS_OVERLAPPEDWINDOW, 100, 100, 1500, 900, nullptr, nullptr, wc.hInstance, nullptr);
+    const int sw = GetSystemMetrics(SM_CXSCREEN);
+    const int sh = GetSystemMetrics(SM_CYSCREEN);
+    const int winW = std::min(1500, sw - 50);
+    const int winH = std::min(900, sh - 50);
+    g_hWnd = CreateWindowW(wc.lpszClassName, appmeta::kWindowTitle, WS_OVERLAPPEDWINDOW, 50, 25, winW, winH, nullptr, nullptr, wc.hInstance, nullptr);
     return g_hWnd != nullptr;
 }
 
@@ -253,26 +258,30 @@ int App::run() {
     if (!createWindow()) return 1;
     if (!createDeviceD3D(g_hWnd)) { destroyWindow(); return 1; }
     ShowWindow(g_hWnd, SW_SHOWDEFAULT); UpdateWindow(g_hWnd);
+    { HDC hdc = GetDC(nullptr); g_uiScale = GetDeviceCaps(hdc, LOGPIXELSX) / 96.0f; ReleaseDC(nullptr, hdc); }
     IMGUI_CHECKVERSION(); ImGui::CreateContext(); ImPlot::CreateContext(); ImGui::StyleColorsDark();
+    ImGui::GetStyle().ScaleAllSizes(g_uiScale);
     ImGuiIO& io = ImGui::GetIO(); io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    const float fs = 13.0f * g_uiScale;
+    const float fsLarge = 15.0f * g_uiScale;
     const fs::path proggy = fs::path(executableDir()) / "_deps" / "imgui-src" / "misc" / "fonts" / "ProggyClean.ttf";
     if (fs::exists(proggy)) {
         ImFontConfig cfg{}; cfg.OversampleH = 1; cfg.OversampleV = 1; cfg.PixelSnapH = true;
-        g_uiFont = io.Fonts->AddFontFromFileTTF(proggy.string().c_str(), 13.0f, &cfg);
-        g_monoFont = io.Fonts->AddFontFromFileTTF(proggy.string().c_str(), 13.0f, &cfg);
-        g_summaryValueFont = io.Fonts->AddFontFromFileTTF(proggy.string().c_str(), 15.0f, &cfg);
+        g_uiFont = io.Fonts->AddFontFromFileTTF(proggy.string().c_str(), fs, &cfg);
+        g_monoFont = io.Fonts->AddFontFromFileTTF(proggy.string().c_str(), fs, &cfg);
+        g_summaryValueFont = io.Fonts->AddFontFromFileTTF(proggy.string().c_str(), fsLarge, &cfg);
         if (g_uiFont) io.FontDefault = g_uiFont;
     } else if (fs::exists("C:\\Windows\\Fonts\\lucon.ttf")) {
-        ImFontConfig cfg{}; cfg.OversampleH = 1; cfg.OversampleV = 1; cfg.PixelSnapH = true;
-        g_uiFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\lucon.ttf", 12.0f, &cfg);
-        g_monoFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\lucon.ttf", 12.0f, &cfg);
-        g_summaryValueFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\lucon.ttf", 14.0f, &cfg);
+        ImFontConfig cfg{}; cfg.OversampleH = 2; cfg.OversampleV = 2;
+        g_uiFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\lucon.ttf", fs, &cfg);
+        g_monoFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\lucon.ttf", fs, &cfg);
+        g_summaryValueFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\lucon.ttf", fsLarge, &cfg);
         if (g_uiFont) io.FontDefault = g_uiFont;
     } else if (fs::exists("C:\\Windows\\Fonts\\consola.ttf")) {
-        ImFontConfig cfg{}; cfg.OversampleH = 1; cfg.OversampleV = 1; cfg.PixelSnapH = true;
-        g_uiFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\consola.ttf", 12.0f, &cfg);
-        g_monoFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\consola.ttf", 12.0f, &cfg);
-        g_summaryValueFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\consola.ttf", 14.0f, &cfg);
+        ImFontConfig cfg{}; cfg.OversampleH = 2; cfg.OversampleV = 2;
+        g_uiFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\consola.ttf", fs, &cfg);
+        g_monoFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\consola.ttf", fs, &cfg);
+        g_summaryValueFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\consola.ttf", fsLarge, &cfg);
         if (g_uiFont) io.FontDefault = g_uiFont;
     }
     applyTheme();
@@ -311,9 +320,9 @@ void App::renderUi() {
 
     const ImVec2 avail = ImGui::GetContentRegionAvail();
     const float spacing = ImGui::GetStyle().ItemSpacing.x;
-    const float leftWidth = 352.0f;
-    const float summaryHeight = 176.0f;
-    const float cfgHeight = std::min(avail.y - summaryHeight - spacing, 560.0f);
+    const float leftWidth = 352.0f * g_uiScale;
+    const float summaryHeight = 176.0f * g_uiScale;
+    const float cfgHeight = std::min(avail.y - summaryHeight - spacing, 560.0f * g_uiScale);
     ImGui::BeginChild("left", ImVec2(leftWidth, avail.y), false, ImGuiWindowFlags_NoScrollbar);
     ImGui::BeginChild("cfg", ImVec2(0, cfgHeight), false, ImGuiWindowFlags_NoScrollbar); drawConfigPanel(); ImGui::EndChild();
     ImGui::BeginChild("sumhost", ImVec2(0, summaryHeight), false, ImGuiWindowFlags_NoScrollbar); drawSummaryPanel(); ImGui::EndChild();
@@ -325,7 +334,7 @@ void App::renderUi() {
 
 void App::drawConfigPanel() {
     ImGui::BeginChild("config", ImVec2(0, 0), true, ImGuiWindowFlags_NoScrollbar);
-    const float inputWidth = 228.0f;
+    const float inputWidth = 228.0f * g_uiScale;
     if (ImGui::CollapsingHeader("iperf Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
         const char* versions[] = {"iperf3", "iperf2"}; int versionIdx = cfg_.useIperf3 ? 0 : 1;
         if (CompactComboRow("version", "Version", &versionIdx, versions, IM_ARRAYSIZE(versions), inputWidth)) { cfg_.useIperf3 = versionIdx == 0; cfg_.port = cfg_.useIperf3 ? 5201 : 5001; syncPortAndFilter(); }

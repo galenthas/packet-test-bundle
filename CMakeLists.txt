@@ -93,6 +93,7 @@ target_link_options(PacketTestBundle PRIVATE
     $<$<CONFIG:Release>:/OPT:REF>
     $<$<CONFIG:Release>:/OPT:ICF>
     $<$<CONFIG:Release>:/LTCG>
+
 )
 
 target_link_libraries(PacketTestBundle PRIVATE
@@ -166,6 +167,26 @@ endif()
 
 install(FILES "${CMAKE_SOURCE_DIR}/PORTABLE_README.txt"
     DESTINATION .
+)
+
+# ── Unit tests ────────────────────────────────────────────────────────────────
+add_executable(PacketTestBundleTests
+    test/test_main.cpp
+    src/command_builder.cpp
+    src/parser_iperf.cpp
+)
+target_include_directories(PacketTestBundleTests PRIVATE src)
+target_compile_definitions(PacketTestBundleTests PRIVATE
+    UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX
+    WINVER=0x0600 _WIN32_WINNT=0x0600
+)
+set_target_properties(PacketTestBundleTests PROPERTIES OUTPUT_NAME "PacketTestBundleTests")
+
+add_custom_target(run_tests
+    COMMAND PacketTestBundleTests
+    DEPENDS PacketTestBundleTests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Running unit tests"
 )
 
 set(CPACK_PACKAGE_NAME "Packet Test Bundle")
