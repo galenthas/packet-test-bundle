@@ -116,14 +116,16 @@ foreach(_runtime_name IN ITEMS msvcp140.dll vcruntime140.dll vcruntime140_1.dll)
     endif()
 endforeach()
 
-# Copy bin/ directory to output directory after build
-add_custom_command(TARGET PacketTestBundle POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/../bin"
-        "$<TARGET_FILE_DIR:PacketTestBundle>/bin"
-    COMMENT "Copying bin/ directory to output"
-    VERBATIM
-)
+# Copy bin/ directory to output directory after build (only if it exists locally)
+if(EXISTS "${CMAKE_SOURCE_DIR}/../bin")
+    add_custom_command(TARGET PacketTestBundle POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/../bin"
+            "$<TARGET_FILE_DIR:PacketTestBundle>/bin"
+        COMMENT "Copying bin/ directory to output"
+        VERBATIM
+    )
+endif()
 
 if(WIRESHARK_ROOT AND EXISTS "${WIRESHARK_ROOT}/dumpcap.exe")
     add_custom_command(TARGET PacketTestBundle POST_BUILD
@@ -149,9 +151,11 @@ install(TARGETS PacketTestBundle
     RUNTIME DESTINATION .
 )
 
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/../bin"
-    DESTINATION .
-)
+if(EXISTS "${CMAKE_SOURCE_DIR}/../bin")
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/../bin"
+        DESTINATION .
+    )
+endif()
 
 if(WIRESHARK_ROOT AND EXISTS "${WIRESHARK_ROOT}/dumpcap.exe")
     install(FILES "${WIRESHARK_ROOT}/dumpcap.exe"
