@@ -64,7 +64,8 @@ jobs:
       - name: Build installer
         run: |
           choco install innosetup --no-progress -y
-          ISCC /DMyAppVersion=${{ github.ref_name }} installer.iss
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          ISCC /DMyAppVersion=$version installer.iss
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
