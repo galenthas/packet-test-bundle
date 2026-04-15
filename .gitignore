@@ -1,0 +1,24 @@
+# Build output
+build_release/
+build/
+
+# CMake artifacts
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+build.ninja
+*.ninja_deps
+*.ninja_log
+install_manifest.txt
+CPackConfig.cmake
+CPackSourceConfig.cmake
+_CPack_Packages/
+_deps/
+
+# Compiled binaries
+*.exe
+*.dll
+*.zip
+
+# ImGui runtime state
+imgui.ini
