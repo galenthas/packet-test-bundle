@@ -61,6 +61,14 @@ jobs:
       - name: Build
         run: cmake --build build
 
+      - name: Download bundled tools
+        run: |
+          gh release download tools --pattern "tools-bundle.zip" --dir ..\
+          Expand-Archive -Path "..\tools-bundle.zip" -DestinationPath "..\"
+          gh release download tools --pattern "npcap-installer.exe" --dir .
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Build installer
         run: |
           choco install innosetup --no-progress -y
