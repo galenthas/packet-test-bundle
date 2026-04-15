@@ -26,15 +26,23 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription:
 
 [Files]
 ; Main executable
-Source: "build_new\PacketTestBundle.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "build\PacketTestBundle.exe"; DestDir: "{app}"; Flags: ignoreversion
 
-; Bundled tools
+; Bundled tools (only included when building locally with bin/ present)
+#if DirExists("..\bin\iperf2")
 Source: "..\bin\iperf2\*"; DestDir: "{app}\bin\iperf2"; Flags: ignoreversion recursesubdirs
+#endif
+#if DirExists("..\bin\iperf3")
 Source: "..\bin\iperf3\*"; DestDir: "{app}\bin\iperf3"; Flags: ignoreversion recursesubdirs
+#endif
+#if DirExists("..\bin\tshark")
 Source: "..\bin\tshark\*"; DestDir: "{app}\bin\tshark"; Flags: ignoreversion recursesubdirs
+#endif
 
-; Npcap installer (extracted after install, not left behind)
+; Npcap installer (only included when building locally with npcap-installer.exe present)
+#if FileExists("npcap-installer.exe")
 Source: "npcap-installer.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
+#endif
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"
@@ -53,6 +61,11 @@ procedure InstallNpcap();
 var
   resultCode: Integer;
 begin
+  if not FileExists(ExpandConstant('{tmp}\npcap-installer.exe')) then
+  begin
+    Log('Npcap installer not bundled, skipping.');
+    Exit;
+  end;
   if NpcapInstalled() then
   begin
     Log('Npcap already installed, skipping.');
