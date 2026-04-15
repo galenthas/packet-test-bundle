@@ -22,3 +22,10 @@ _deps/
 
 # ImGui runtime state
 imgui.ini
+
+# Local build helpers (machine-specific)
+build_new.bat
+build_new/
+pack.bat
+npcap-installer.exe
+installer_out/
