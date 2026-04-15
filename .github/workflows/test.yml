@@ -11,18 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure CMake
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-        shell: cmd
 
       - name: Build tests
         run: cmake --build build --target PacketTestBundleTests
-        shell: cmd
 
       - name: Run tests
         id: run-tests
-        run: build\PacketTestBundleTests.exe 2>&1 | tee test_output.txt
-        shell: cmd
+        run: build\PacketTestBundleTests.exe | tee test_output.txt
 
       - name: Write job summary
         if: always()
@@ -35,7 +35,6 @@ jobs:
 
       - name: Build GUI
         run: cmake --build build --target PacketTestBundle
-        shell: cmd
 
       - name: Upload GUI artifact
         uses: actions/upload-artifact@v7
@@ -53,19 +52,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure CMake
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-        shell: cmd
 
       - name: Build
         run: cmake --build build
-        shell: cmd
 
       - name: Build installer
         run: |
           choco install innosetup --no-progress -y
           ISCC /DMyAppVersion=${{ github.ref_name }} installer.iss
-        shell: cmd
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
