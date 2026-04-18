@@ -34,6 +34,47 @@ Download the latest release from the [Releases page](https://github.com/galentha
 
 > **Note:** Packet capture (tshark) requires [Npcap](https://npcap.com). The installer handles this automatically.
 
+## How It Works
+
+Packet Test Bundle launches bundled copies of iperf2, iperf3, tshark, and ping as child processes, parses their output in real time, and renders the results as interactive ImPlot charts inside a DirectX 11 window. Each tool runs on its own worker thread so the GUI stays responsive during long tests. No network traffic is sent to any external server — all tests run point-to-point between machines you control.
+
+## FAQ
+
+### Is Packet Test Bundle free?
+
+Yes. Packet Test Bundle is free and open source under the MIT license. You can use it for personal, educational, and commercial purposes.
+
+### How do I test network speed between two computers?
+
+1. Download Packet Test Bundle on both machines.
+2. On one machine, start an **iperf3 server**.
+3. On the other machine, enter the server's IP address and click **Start** in client mode.
+4. The live chart will show your TCP or UDP throughput in real time.
+
+### Do I need to install Wireshark for packet capture?
+
+No. Packet Test Bundle ships with tshark (the Wireshark command-line engine) already bundled. You only need to install [Npcap](https://npcap.com) for the capture driver — the Windows installer does this automatically.
+
+### What is the difference between iperf2 and iperf3?
+
+iperf2 supports multi-threaded parallel streams and bidirectional tests natively. iperf3 is a rewrite with JSON output, single-threaded by design, and more detailed per-stream statistics. Packet Test Bundle includes both so you can pick the right tool for each test.
+
+### Does it work on Windows 10 and Windows 11?
+
+Yes. Packet Test Bundle is tested on Windows 10 and Windows 11. It is DPI-aware and scales correctly on standard and HiDPI / 4K displays.
+
+## Alternatives
+
+| Tool | GUI | iperf | Packet Capture | Open Source |
+|---|---|---|---|---|
+| **Packet Test Bundle** | Yes (native) | iperf2 + iperf3 | Yes (tshark) | MIT |
+| jperf / JPerf | Java Swing | iperf2 only | No | GPL |
+| iPerf3 CLI | No | iperf3 only | No | BSD |
+| Wireshark | Yes | No | Yes | GPL |
+| LAN Speed Test | Yes | No | No | No (paid) |
+
+Packet Test Bundle combines iperf throughput testing and tshark packet capture in a single lightweight native app — no Java runtime, no browser, no separate Wireshark install.
+
 ## Build
 
 Requires Visual Studio 2022 Build Tools and CMake.
