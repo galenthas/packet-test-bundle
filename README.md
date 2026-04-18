@@ -1,16 +1,29 @@
-# Packet Test Bundle
+# Packet Test Bundle — Windows GUI for iperf2, iperf3 & tshark
 
-A native Win32 GUI for network packet testing — iperf2, iperf3, tshark, and ping bundled into a single application.
+A free, open-source Windows GUI for network bandwidth and latency testing. Bundles **iperf2**, **iperf3**, **tshark**, and **ping** into a single portable application — no command line required. Measure TCP/UDP throughput between two machines, capture packets with BPF filters, and watch live latency charts, all from one dark-themed native interface.
 
 ![Tests](https://github.com/galenthas/packet-test-bundle/actions/workflows/test.yml/badge.svg)
-![Platform](https://img.shields.io/badge/platform-Windows-blue)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)
 ![Language](https://img.shields.io/badge/language-C%2B%2B17-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Version](https://img.shields.io/github/v/release/galenthas/packet-test-bundle)
 
-## Screenshot
+## Use Cases
 
-<!-- Add screenshot here -->
+- **LAN / WAN speed test** — measure real TCP or UDP throughput between two Windows machines
+- **Network troubleshooting** — capture live packets with tshark and BPF filters without opening a terminal
+- **Latency monitoring** — run a continuous ping and watch the latency graph spike in real time
+- **iperf3 GUI** — a graphical front-end for iperf3 on Windows with client and server modes
+
+## Features
+
+- **iperf2 / iperf3** — TCP/UDP throughput testing, client and server modes, configurable duration and parallel streams
+- **Ping** — continuous latency monitoring with a live scrolling chart
+- **Packet capture** — tshark-based network capture with BPF filter support, no Wireshark install needed
+- **Live charts** — ImPlot-based throughput and latency graphs that update in real time
+- **Dark theme** — native Win32 + ImGui/DirectX 11 rendering
+- **DPI-aware** — scales correctly on all display resolutions including HiDPI / 4K monitors
+- **Portable** — single `.exe`, no installation required (packet capture needs Npcap)
 
 ## Installation
 
@@ -20,15 +33,6 @@ Download the latest release from the [Releases page](https://github.com/galentha
 - **`PacketTestBundle.exe`** — Portable executable
 
 > **Note:** Packet capture (tshark) requires [Npcap](https://npcap.com). The installer handles this automatically.
-
-## Features
-
-- **iperf2 / iperf3** — TCP/UDP throughput testing, client and server modes
-- **Ping** — Continuous latency monitoring with live chart
-- **Packet capture** — tshark-based capture with BPF filter support
-- **Live charts** — ImPlot-based throughput and latency graphs
-- **Dark theme** — Native Win32 + ImGui/DirectX 11 rendering
-- **DPI-aware** — Scales correctly on all display resolutions
 
 ## Build
 
