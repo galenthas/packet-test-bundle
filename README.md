@@ -8,6 +8,10 @@ A free, open-source Windows GUI for network bandwidth and latency testing. Bundl
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Version](https://img.shields.io/github/v/release/galenthas/packet-test-bundle)
 
+## Screenshot
+
+![Packet Test Bundle — Windows GUI for iperf3 bandwidth testing, ping latency monitoring, and tshark packet capture](screenshot.png)
+
 ## Use Cases
 
 - **LAN / WAN speed test** — measure real TCP or UDP throughput between two Windows machines
